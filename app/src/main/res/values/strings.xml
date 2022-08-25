@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">News</string>
+    <string name="title_home">Home</string>
+    <string name="title_bookmark">Bookmark</string>
+    <string name="no_item_list">No items in list</string>
+    <string name="error_msg">Something went wrong</string>
+</resources>
