@@ -15,5 +15,7 @@ This repository demonstrates MVVM and consumes free news api .
  - Dependency Injection - Koin
  - Network - Retrofit & Coroutines
 
+Note - Bookmark function & List Ui is not done. 
+
  
 
