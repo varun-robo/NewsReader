@@ -16,6 +16,8 @@ This repository demonstrates MVVM and consumes free news api .
  - Network - Retrofit & Coroutines
 
 Note - Bookmark function & List Ui is not done. 
+ Review team can check app build through apk folder & shreenshot folder
+ 
 
  
 
