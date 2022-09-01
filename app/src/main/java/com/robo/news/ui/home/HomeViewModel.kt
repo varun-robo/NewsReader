@@ -1,29 +1,32 @@
 package com.robo.news.ui.home
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.robo.news.source.news.NewsApiRepositoryInterface
 
 import com.robo.news.source.news.NewsModel
 import com.robo.news.source.news.NewsRepository
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import kotlin.math.ceil
 
 val homeViewModel = module {
-    factory { HomeViewModel(get()) }
+    viewModel { HomeViewModel(get<NewsRepository>()) }
 }
 
 class HomeViewModel(
-    val repository: NewsRepository
+    val repository: NewsApiRepositoryInterface
 ) : ViewModel() {
     val title = ""
-
-  //  val category by lazy { MutableLiveData<String>() }
+    var isActivated = true
     val message by lazy { MutableLiveData<String>() }
     val loading by lazy { MutableLiveData<Boolean>() }
     val loadMore by lazy { MutableLiveData<Boolean>() }
     val news by lazy { MutableLiveData<NewsModel>() }
+    private val mErrorMessage = MutableLiveData<String?>()
 
     init {
       //  category.value = ""
@@ -40,9 +43,9 @@ class HomeViewModel(
         if (page > 1) loadMore.value = true else loading.value = true
         viewModelScope.launch {
             try {
-                val response = repository.fetch( query, page,pageSize)
+                val response = repository.getHeadlines( query, page,pageSize)
                 news.value = response
-                val totalResult : Double = (response.totalResults / pageSize).toDouble()
+                val totalResult : Double = (response!!.totalResults / pageSize).toDouble()
                 maxpage = ceil(totalResult).toInt()
                 page++
                 loading.value = false
@@ -53,5 +56,6 @@ class HomeViewModel(
         }
     }
 
+    fun generateToken() : String = if (isActivated) "Token" else ""
 
 }

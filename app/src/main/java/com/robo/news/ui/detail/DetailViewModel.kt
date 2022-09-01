@@ -6,10 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.robo.news.source.news.ArticleModel
 import com.robo.news.source.news.NewsRepository
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val detailViewModel = module {
-    factory { DetailViewModel(get()) }
+    viewModel { DetailViewModel(get()) }
 }
 
 class DetailViewModel(

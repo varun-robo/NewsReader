@@ -11,9 +11,13 @@ Features -
   - RecyclerView uses pagination to optimize api calls
   
 This repository demonstrates MVVM and consumes free news api .
- - Architecture - Mvvm , ViewModel
+ - Architecture - Mvvm , ViewModel & ROOM
  - Dependency Injection - Koin
  - Network - Retrofit & Coroutines
+ - Unit Test - KoTest 
+   - Kotest file added - com.robo.news.MyKoTestClass
+     Junit + Mock test Added - com.robo.news.viewmodel.home.HomeViewModelTest
+     Junit + Koin DI fale mocking test added - com.robo.news.viewmodel.home.HomeViewModelTest
 
 Note - Bookmark function & List Ui is not done. 
  Review team can check app build through apk folder & shreenshot folder
