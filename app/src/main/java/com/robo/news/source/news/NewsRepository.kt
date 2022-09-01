@@ -31,14 +31,14 @@ class NewsRepository(
         )
     }
 
-    suspend fun find(articleModel: ArticleModel)= db.find(articleModel.publishedAt )
+    suspend fun find(articleModel: ArticleModel)= db?.find(articleModel.publishedAt )
 
     suspend fun save(articleModel: ArticleModel){
-        db.save(articleModel)
+        db?.save(articleModel)
     }
 
     suspend fun remove(articleModel: ArticleModel){
-        db.remove(articleModel)
+        db?.remove(articleModel)
     }
 
     override fun observeHeadlines(): LiveData<NewsModel> {

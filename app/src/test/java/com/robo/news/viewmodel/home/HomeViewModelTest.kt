@@ -1,4 +1,4 @@
-package com.robo.news.ui.home
+package com.robo.news.viewmodel.home.HomeViewModelTest
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
@@ -9,6 +9,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import com.robo.news.source.network.Resource
 import com.robo.news.source.news.NewsModel
 import com.robo.news.source.news.NewsRepository
+import com.robo.news.ui.home.HomeViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -16,7 +17,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.jupiter.api.Assertions.*
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
@@ -25,11 +25,11 @@ internal class HomeViewModelTest {
     private var articles = NewsModel()
     private lateinit var viewModel: HomeViewModel
     private lateinit var newsRepository: NewsRepository
-    private lateinit var weatherObserver: Observer<NewsModel>
+    private lateinit var newsObserver: Observer<NewsModel>
     private val validLocation = "Success"
     private val invalidLocation = "Fail"
 
-    private val successResource = Resource.success(NewsModel("Success",0, emptyList()));
+    private val successResource = Resource.success(NewsModel("",0, emptyList()));
     private val errorResource = Resource.error("Unauthorised", null)
 
 
@@ -47,11 +47,11 @@ internal class HomeViewModelTest {
         Dispatchers.setMain(mainThreadSurrogate)
         newsRepository = mock()
         runBlocking {
-            whenever(newsRepository.getHeadlines("",1,6)).thenReturn(successResource.data)
-            whenever(newsRepository.getHeadlines("",1,6)).thenReturn(errorResource.data)
+            whenever(newsRepository.getHeadlines("",1,5)).thenReturn(successResource.data)
+            whenever(newsRepository.getHeadlines("",1,5)).thenReturn(errorResource.data)
         }
         viewModel = HomeViewModel(newsRepository)
-        weatherObserver = mock()
+        newsObserver = mock()
     }
 
     @ObsoleteCoroutinesApi
@@ -63,43 +63,24 @@ internal class HomeViewModelTest {
     }
 
     @Test
-    fun `when getWeather is called with valid location, then observer is updated with success`() = runBlocking {
-        viewModel.news.observeForever(weatherObserver)
+    fun `when getHeadlines is called with valid location, then observer is updated with success`() = runBlocking {
+        viewModel.news.observeForever(newsObserver)
         viewModel.fetch()
         delay(10)
-        verify(newsRepository).getHeadlines("Success",1,6)
-        verify(weatherObserver, timeout(50)).onChanged(Resource.loading(null).data)
-        verify(weatherObserver, timeout(50)).onChanged(successResource.data)
+        verify(newsRepository).getHeadlines("",1,5)
+        verify(newsObserver, timeout(50)).onChanged(Resource.loading(null).data)
+        verify(newsObserver, timeout(50)).onChanged(successResource.data)
     }
 
     @Test
-    fun `when getWeather is called with invalid location, then observer is updated with failure`() = runBlocking {
-        viewModel.news.observeForever(weatherObserver)
+    fun `when getHeadlines is called with invalid location, then observer is updated with failure`() = runBlocking {
+        viewModel.news.observeForever(newsObserver)
         viewModel.fetch()
         delay(10)
-        verify(newsRepository).getHeadlines("Error",1,6)
-        verify(weatherObserver, timeout(50)).onChanged(Resource.loading(null).data)
-        verify(weatherObserver, timeout(50)).onChanged(errorResource.data)
+        verify(newsRepository).getHeadlines("",1,5)
+        verify(newsObserver, timeout(50)).onChanged(Resource.loading(null).data)
+        verify(newsObserver, timeout(50)).onChanged(errorResource.data)
     }
 
 
-    @org.junit.jupiter.api.Test
-    fun getMessage() {
-    }
-
-    @org.junit.jupiter.api.Test
-    fun getNews() {
-    }
-
-    @org.junit.jupiter.api.Test
-    fun fetch() {
-    }
-
-    @org.junit.jupiter.api.Test
-    fun generateToken() {
-    }
-
-    @org.junit.jupiter.api.Test
-    fun getRepository() {
-    }
 }

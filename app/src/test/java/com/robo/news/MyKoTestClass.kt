@@ -1,75 +1,82 @@
 package com.robo.news
 
-import com.robo.news.source.network.networkModule
-import com.robo.news.source.news.repositoryModule
-import com.robo.news.source.persistence.databaseModule
-import com.robo.news.ui.bookmark.bookmarkModule
-import com.robo.news.ui.bookmark.bookmarkViewModel
-import com.robo.news.ui.detail.detailModul
-import com.robo.news.ui.detail.detailViewModel
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.Observer
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
+import com.robo.news.source.network.Resource
+
+import com.robo.news.source.news.NewsModel
+import com.robo.news.source.news.NewsRepository
 import com.robo.news.ui.home.HomeViewModel
-import com.robo.news.ui.home.homeModule
-import com.robo.news.ui.home.homeViewModel
-//import io.kotest.core.spec.style.DescribeSpec
-//import io.kotest.engine.config.ConfigManager.init
-//import io.kotest.koin.KoinExtension
-//import io.kotest.koin.KoinLifecycleMode
-//import io.kotest.koin.KoinListener
-//import io.kotest.matchers.shouldBe
-import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.context.startKoin
-import org.koin.java.KoinJavaComponent.inject
-import org.koin.test.KoinTest
-import kotlin.reflect.KProperty
 
-class TestViewModel() {
-    var isActivated = true
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 
-    fun generateToken() : String = if (isActivated) "Token" else ""
-}
 
-class MyKoTestClass  //DescribeSpec(), KoinTest
-    {
-//        var  homeNewsModel   by inject<HomeViewModel>()
-//        init {
-//            test("Make a test with Koin") {
-//                startKoin { modules(networkModule,
-//                    repositoryModule,
-//                    homeViewModel,
-//                    homeModule,
-//                    bookmarkViewModel,
-//                    bookmarkModule,
-//                    databaseModule,
-//                    detailViewModel,
-//                    detailModul) }
-//
-//                // use componentA here!
-//                beforeSpec {
-//                    // Lazy inject property
-//
-//                }
-//            }
-//
-//            describe("generateToken") {
-//                context("when isActivated is true") {
-//                    val token = homeNewsModel.generateToken()
-//                    it("verify token") {
-//                        token shouldBe "Token"
-//                    }
-//                }
-//                context("when isActivated is false") {
-//                    homeNewsModel.isActivated = false
-//                    val token = homeNewsModel.generateToken()
-//                    it("verify token") {
-//                        token shouldBe ""
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//}
-//
-//private operator fun <T> Lazy<T>.setValue(myKoTestClass: MyKoTestClass, property: KProperty<T?>, t: T) {
 
-}
+
+ class MyKoTestClass : DescribeSpec({
+    lateinit var testViewModel: HomeViewModel
+
+     var articles = NewsModel()
+     lateinit var viewModel: HomeViewModel
+     lateinit var newsRepository: NewsRepository
+     lateinit var newsObserver: Observer<NewsModel>
+
+     val successResource = Resource.success(NewsModel("",0, emptyList()))
+    val errorResource = Resource.error("Unauthorised", null)
+
+//     @Rule
+//     @JvmField
+     val instantExecutorRule = InstantTaskExecutorRule()
+
+    // @ExperimentalCoroutinesApi
+     val mainThreadSurrogate = newSingleThreadContext("UI thread")
+
+
+     beforeSpec {
+        Dispatchers.setMain(mainThreadSurrogate)
+         newsRepository = mock()
+
+         runBlocking {
+             whenever(newsRepository.getHeadlines("",1,5)).thenReturn(successResource.data)
+             whenever(newsRepository.getHeadlines("",1,5)).thenReturn(errorResource.data)
+         }
+         testViewModel = HomeViewModel(newsRepository)
+
+         viewModel = HomeViewModel(newsRepository)
+         newsObserver = mock()
+
+    }
+
+     afterSpec {
+         Dispatchers.resetMain() // reset main dispatcher to the original Main dispatcher
+         mainThreadSurrogate.close()
+     }
+
+    describe("generateToken") {
+        context("when isActivated is true") {
+            val token = testViewModel.generateToken()
+            it("verify token") {
+                token shouldBe "Token"
+            }
+        }
+        context("when isActivated is false") {
+            testViewModel.isActivated = false
+            val token = testViewModel.generateToken()
+            it("verify token") {
+                token shouldBe ""
+            }
+        }
+    }
+
+
+})
+
+
+
+

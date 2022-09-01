@@ -24,8 +24,6 @@ class NewsApiVMTest: KoinTest {
     private val viewModel by inject<HomeViewModel>()
     private val repository by inject<FakeNewsApiRepository>()
 
-
-
     @get:Rule
     val setupViewModel = KoinTestRule.create {
         printLogger(Level.DEBUG)

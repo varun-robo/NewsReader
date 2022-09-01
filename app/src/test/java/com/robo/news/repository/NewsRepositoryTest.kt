@@ -3,6 +3,7 @@ package com.github.harmittaa.koinexample.repository
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
+import com.robo.news.BuildConfig
 import com.robo.news.source.network.ApiClient
 import com.robo.news.source.network.Resource
 import com.robo.news.source.network.ResponseHandler
@@ -23,8 +24,6 @@ class NewsRepositoryTest {
     private val responseHandler = ResponseHandler()
     private lateinit var newsApi: ApiClient
     private lateinit var repository: NewsRepository
-    private val validLocation = "Helsinki"
-    private val invalidLocation = "Somewhere else"
     private val newsModel = NewsModel("Success",0, emptyList())
     private val newsResponse = Resource.success(newsModel)
     private val errorResponse = Resource.error("Unauthorised", null)
@@ -36,8 +35,20 @@ class NewsRepositoryTest {
         val mockException: HttpException = mock()
         whenever(mockException.code()).thenReturn(401)
         runBlocking {
-            whenever(newsApi.fetchNews(eq(invalidLocation), anyString())).thenThrow(mockException)
-            whenever(newsApi.fetchNews(eq(validLocation), anyString())).thenReturn(newsModel)
+            // correct api query  param call
+            whenever(newsApi.fetchNews(
+                BuildConfig.API_KEY,
+                "id",
+                "Iphone",
+                1,
+                5)).thenThrow(mockException)
+
+            // wrong api query  param call
+            whenever(newsApi.fetchNews(BuildConfig.API_KEY,
+                "id",
+                "Varun",
+                1,
+                5)).thenReturn(newsModel)
         }
         repository = NewsRepository(
             newsApi)

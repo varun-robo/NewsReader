@@ -22,7 +22,6 @@ class HomeViewModel(
 ) : ViewModel() {
     val title = ""
     var isActivated = true
-  //  val category by lazy { MutableLiveData<String>() }
     val message by lazy { MutableLiveData<String>() }
     val loading by lazy { MutableLiveData<Boolean>() }
     val loadMore by lazy { MutableLiveData<Boolean>() }
@@ -53,7 +52,6 @@ class HomeViewModel(
                 loadMore.value = false
             } catch (e: Exception) {
                 message.value = e.message
-              //  res?.let { mErrorMessage.postValue(res)}
             }
         }
     }
