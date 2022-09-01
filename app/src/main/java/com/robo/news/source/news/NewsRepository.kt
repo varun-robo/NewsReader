@@ -1,19 +1,23 @@
 package com.robo.news.source.news
 
+import androidx.lifecycle.LiveData
 import com.robo.news.BuildConfig
 import com.robo.news.source.network.ApiClient
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    factory { NewsRepository( get(), get() ) }
+    factory { NewsRepository( get() , get()) }
 }
 
 class NewsRepository(
     private val api: ApiClient,
-    val db: NewsDao
-) {
+    val db: NewsDao?
+):NewsApiRepositoryInterface {
+    constructor( api: ApiClient) : this(api, null) {
 
-    suspend fun fetch(
+    }
+
+    override  suspend fun getHeadlines(
         query: String,
         page: Int,
         pageSize: Int,
@@ -35,5 +39,9 @@ class NewsRepository(
 
     suspend fun remove(articleModel: ArticleModel){
         db.remove(articleModel)
+    }
+
+    override fun observeHeadlines(): LiveData<NewsModel> {
+        TODO("Not yet implemented")
     }
 }
