@@ -11,9 +11,9 @@ Features -
   - RecyclerView uses pagination to optimize api calls
   
 This repository demonstrates MVVM and consumes free news api .
- - Architecture - Mvvm , ViewModel
+ - Architecture - Mvvm , ViewModel & ROOM
  - Dependency Injection - Koin
  - Network - Retrofit & Coroutines
-
+ - Unit Test - KoTest 
  
 

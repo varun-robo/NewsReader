@@ -43,7 +43,7 @@ class NewsAdapter(
         }else{
             VIEW_TYPE = NEWS
         }
-        return VIEW_TYPE;
+        return VIEW_TYPE
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
