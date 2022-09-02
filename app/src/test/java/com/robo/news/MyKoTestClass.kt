@@ -3,8 +3,10 @@ package com.robo.news
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.robo.news.source.network.Resource
+import com.robo.news.source.network.Status
 
 import com.robo.news.source.news.NewsModel
 import com.robo.news.source.news.NewsRepository
@@ -20,12 +22,12 @@ import kotlinx.coroutines.test.setMain
 
 
  class MyKoTestClass : DescribeSpec({
-    lateinit var testViewModel: HomeViewModel
+
 
      var articles = NewsModel()
      lateinit var viewModel: HomeViewModel
      lateinit var newsRepository: NewsRepository
-     lateinit var newsObserver: Observer<NewsModel>
+     lateinit var newsObserver: Observer<Status>
 
      val successResource = Resource.success(NewsModel("",0, emptyList()))
     val errorResource = Resource.error("Unauthorised", null)
@@ -46,7 +48,6 @@ import kotlinx.coroutines.test.setMain
              whenever(newsRepository.getHeadlines("",1,5)).thenReturn(successResource.data)
              whenever(newsRepository.getHeadlines("",1,5)).thenReturn(errorResource.data)
          }
-         testViewModel = HomeViewModel(newsRepository)
 
          viewModel = HomeViewModel(newsRepository)
          newsObserver = mock()
@@ -59,21 +60,30 @@ import kotlinx.coroutines.test.setMain
      }
 
     describe("generateToken") {
-        context("when isActivated is true") {
-            val token = testViewModel.generateToken()
-            it("verify token") {
-                token shouldBe "Token"
-            }
-        }
-        context("when isActivated is false") {
-            testViewModel.isActivated = false
-            val token = testViewModel.generateToken()
-            it("verify token") {
-                token shouldBe ""
-            }
-        }
-    }
 
+            context("when fetch News success") {
+                viewModel.status.observeForever(newsObserver)
+                viewModel.fetch()
+                delay(10)
+                verify(newsRepository).getHeadlines("",1,5)
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.START)
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.SUCCESS)
+                it("verify token") {
+                    viewModel.status shouldBe Status.SUCCESS
+                }
+            }
+            context("when fetch News is failed") {
+                viewModel.status.observeForever(newsObserver)
+                viewModel.fetch()
+                delay(10)
+                verify(newsRepository).getHeadlines("",1,5)
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.START)
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.ERROR)
+                it("verify token") {
+                    viewModel.status shouldBe Status.ERROR
+                }
+            }
+    }
 
 })
 
