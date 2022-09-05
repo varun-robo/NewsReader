@@ -6,14 +6,12 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.robo.news.source.network.Resource
-import com.robo.news.source.network.Status
 
 import com.robo.news.source.news.NewsModel
 import com.robo.news.source.news.NewsRepository
 import com.robo.news.ui.home.HomeViewModel
 
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -24,13 +22,12 @@ import kotlinx.coroutines.test.setMain
  class MyKoTestClass : DescribeSpec({
 
 
-     var articles = NewsModel()
-     lateinit var viewModel: HomeViewModel
-     lateinit var newsRepository: NewsRepository
-     lateinit var newsObserver: Observer<Status>
+      lateinit var viewModel: HomeViewModel
+      lateinit var newsRepository: NewsRepository
+      lateinit var newsObserver: Observer<Resource<NewsModel>>
 
-     val successResource = Resource.success(NewsModel("",0, emptyList()))
-    val errorResource = Resource.error("Unauthorised", null)
+      val successResource = Resource.success(NewsModel("Success",0, emptyList()));
+      val errorResource = Resource.error("Unauthorised", NewsModel("Error 404",0, emptyList()))
 
 //     @Rule
 //     @JvmField
@@ -45,10 +42,9 @@ import kotlinx.coroutines.test.setMain
          newsRepository = mock()
 
          runBlocking {
-             whenever(newsRepository.getHeadlines("",1,5)).thenReturn(successResource.data)
-             whenever(newsRepository.getHeadlines("",1,5)).thenReturn(errorResource.data)
+             whenever(newsRepository.getHeadlines("Success",1,5)).thenReturn(successResource)
+             whenever(newsRepository.getHeadlines("Error",1,5)).thenReturn(errorResource)
          }
-
          viewModel = HomeViewModel(newsRepository)
          newsObserver = mock()
 
@@ -62,29 +58,22 @@ import kotlinx.coroutines.test.setMain
     describe("generateToken") {
 
             context("when fetch News success") {
-                viewModel.status.observeForever(newsObserver)
-                viewModel.fetch()
+                viewModel.news.observeForever(newsObserver)
+                viewModel.repository.getHeadlines("Success",1,5)
                 delay(10)
-                verify(newsRepository).getHeadlines("",1,5)
-                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.START)
-                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.SUCCESS)
-                it("verify token") {
-                    viewModel.status shouldBe Status.SUCCESS
-                }
+                verify(newsRepository).getHeadlines("Success",1,5)
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Resource.loading(null))
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(successResource)
             }
             context("when fetch News is failed") {
-                viewModel.status.observeForever(newsObserver)
-                viewModel.fetch()
+                viewModel.news.observeForever(newsObserver)
+                viewModel.repository.getHeadlines("Error",1,5)
                 delay(10)
-                verify(newsRepository).getHeadlines("",1,5)
-                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.START)
-                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Status.ERROR)
-                it("verify token") {
-                    viewModel.status shouldBe Status.ERROR
-                }
+                verify(newsRepository).getHeadlines("Error",1,5)
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(Resource.loading(null))
+                verify(newsObserver, com.nhaarman.mockitokotlin2.timeout(50)).onChanged(errorResource)
             }
     }
-
 })
 
 

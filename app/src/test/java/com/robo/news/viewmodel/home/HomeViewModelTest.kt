@@ -7,6 +7,7 @@ import com.nhaarman.mockitokotlin2.timeout
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.robo.news.source.network.Resource
+import com.robo.news.source.network.Status
 import com.robo.news.source.news.NewsModel
 import com.robo.news.source.news.NewsRepository
 import com.robo.news.ui.home.HomeViewModel
@@ -19,25 +20,23 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import org.mockito.Mock
 
 @RunWith(JUnit4::class)
 internal class HomeViewModelTest {
-    private var articles = NewsModel()
     private lateinit var viewModel: HomeViewModel
     private lateinit var newsRepository: NewsRepository
-    private lateinit var newsObserver: Observer<NewsModel>
-    private val validLocation = "Success"
-    private val invalidLocation = "Fail"
+    private lateinit var newsObserver: Observer<Resource<NewsModel>>
 
-    private val successResource = Resource.success(NewsModel("",0, emptyList()));
-    private val errorResource = Resource.error("Unauthorised", null)
+    private val successResource = Resource.success(NewsModel("Success",0, emptyList()));
+    private val errorResource = Resource.error("Unauthorised", NewsModel("Error 404",0, emptyList()))
 
 
     @Rule
     @JvmField
     val instantExecutorRule = InstantTaskExecutorRule()
 
-    @ObsoleteCoroutinesApi
+        @ObsoleteCoroutinesApi
     private val mainThreadSurrogate = newSingleThreadContext("UI thread")
 
     @ExperimentalCoroutinesApi
@@ -47,8 +46,8 @@ internal class HomeViewModelTest {
         Dispatchers.setMain(mainThreadSurrogate)
         newsRepository = mock()
         runBlocking {
-            whenever(newsRepository.getHeadlines("",1,5)).thenReturn(successResource.data)
-            whenever(newsRepository.getHeadlines("",1,5)).thenReturn(errorResource.data)
+            whenever(newsRepository.getHeadlines("Success",1,5)).thenReturn(successResource)
+            whenever(newsRepository.getHeadlines("Error",1,5)).thenReturn(errorResource)
         }
         viewModel = HomeViewModel(newsRepository)
         newsObserver = mock()
@@ -63,24 +62,22 @@ internal class HomeViewModelTest {
     }
 
     @Test
-    fun `when getHeadlines is called with valid location, then observer is updated with success`() = runBlocking {
+    fun `when getHeadlines is called with valid result, then observer is updated with success`() = runBlocking {
         viewModel.news.observeForever(newsObserver)
-        viewModel.fetch()
+        viewModel.repository.getHeadlines("Success",1,5)
         delay(10)
-        verify(newsRepository).getHeadlines("",1,5)
-        verify(newsObserver, timeout(50)).onChanged(Resource.loading(null).data)
-        verify(newsObserver, timeout(50)).onChanged(successResource.data)
+        verify(newsRepository).getHeadlines("Success",1,5)
+       verify(newsObserver, timeout(50)).onChanged(Resource.loading(null))
+        verify(newsObserver, timeout(50)).onChanged(successResource)
     }
 
     @Test
-    fun `when getHeadlines is called with invalid location, then observer is updated with failure`() = runBlocking {
+    fun `when getHeadlines is called with invalid result, then observer is updated with failure`() = runBlocking {
         viewModel.news.observeForever(newsObserver)
-        viewModel.fetch()
+        viewModel.repository.getHeadlines("Error",1,5)
         delay(10)
-        verify(newsRepository).getHeadlines("",1,5)
-        verify(newsObserver, timeout(50)).onChanged(Resource.loading(null).data)
-        verify(newsObserver, timeout(50)).onChanged(errorResource.data)
+        verify(newsRepository).getHeadlines("Error",1,5)
+        verify(newsObserver, timeout(50)).onChanged(Resource.loading(null))
+        verify(newsObserver, timeout(50)).onChanged(errorResource)
     }
-
-
 }

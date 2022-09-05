@@ -1,5 +1,6 @@
 package com.robo.news.source.network
 
+import com.robo.news.source.news.NewsDao
 import com.robo.news.source.news.NewsModel
 import retrofit2.http.GET
 import retrofit2.http.Query

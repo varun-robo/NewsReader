@@ -3,6 +3,8 @@ package com.robo.news.source.news
 import androidx.lifecycle.LiveData
 import com.robo.news.BuildConfig
 import com.robo.news.source.network.ApiClient
+import com.robo.news.source.network.Resource
+import com.robo.news.source.network.ResponseHandler
 import org.koin.dsl.module
 
 val repositoryModule = module {
@@ -16,19 +18,25 @@ class NewsRepository(
     constructor( api: ApiClient) : this(api, null) {
 
     }
+    val responseHandler: ResponseHandler = ResponseHandler()
+
 
     override  suspend fun getHeadlines(
         query: String,
         page: Int,
         pageSize: Int,
-    ): NewsModel{
-        return api.fetchNews(
-            BuildConfig.API_KEY,
-            "id",
-            query,
-            page,
-            pageSize
-        )
+    ): Resource<NewsModel> {
+        return try {
+            responseHandler.handleSuccess( api.fetchNews(
+                BuildConfig.API_KEY,
+                "in",
+                query,
+                page,
+                pageSize
+            ))
+        }catch (e: Exception){
+            return responseHandler.handleException(e)
+        }
     }
 
     suspend fun find(articleModel: ArticleModel)= db?.find(articleModel.publishedAt )
@@ -41,7 +49,7 @@ class NewsRepository(
         db?.remove(articleModel)
     }
 
-    override fun observeHeadlines(): LiveData<NewsModel> {
+    override fun observeHeadlines(): LiveData<Resource<NewsModel>> {
         TODO("Not yet implemented")
     }
 }

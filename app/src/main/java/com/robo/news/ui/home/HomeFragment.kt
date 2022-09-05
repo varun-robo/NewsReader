@@ -67,9 +67,9 @@ class HomeFragment : Fragment() {
         firstLoad()
         binding.listNews.adapter = newsAdapter
         viewModel.news.observe(viewLifecycleOwner, {
-            Timber.e(it.articles.toString())
+            Timber.e(it.data?.articles.toString())
             if (viewModel.page == 1) newsAdapter.clear()
-            newsAdapter.add(it.articles)
+            it.data?.let { it1 -> newsAdapter.add(it1.articles) }
         })
 
         viewModel.message.observe(viewLifecycleOwner, {

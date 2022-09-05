@@ -1,6 +1,5 @@
-package com.github.harmittaa.koinexample.repository
+package com.robo.news.repository
 
-import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.robo.news.BuildConfig
@@ -16,7 +15,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.mockito.Mockito.anyString
 import retrofit2.HttpException
 
 @RunWith(JUnit4::class)
@@ -26,7 +24,7 @@ class NewsRepositoryTest {
     private lateinit var repository: NewsRepository
     private val newsModel = NewsModel("Success",0, emptyList())
     private val newsResponse = Resource.success(newsModel)
-    private val errorResponse = Resource.error("Unauthorised", null)
+    private val errorResponse = Resource.error("Something went wrong", null)
 
 
     @Before
@@ -38,31 +36,31 @@ class NewsRepositoryTest {
             // correct api query  param call
             whenever(newsApi.fetchNews(
                 BuildConfig.API_KEY,
-                "id",
-                "Iphone",
+                "in",
+                "Success",
                 1,
-                5)).thenThrow(mockException)
+                5)).thenReturn(newsModel)
 
             // wrong api query  param call
             whenever(newsApi.fetchNews(BuildConfig.API_KEY,
-                "id",
-                "Varun",
+                "in",
+                "Error",
                 1,
-                5)).thenReturn(newsModel)
+                5)).thenThrow(mockException)
         }
         repository = NewsRepository(
             newsApi)
     }
 
     @Test
-    fun `test getWeather when valid location is requested, then weather is returned`() =
+    fun `test getWeather when valid search is requested, then weather is returned`() =
         runBlocking {
-            assertEquals(newsResponse, repository.getHeadlines("iPhone" , 1, 6))
+            assertEquals(newsResponse, repository.getHeadlines("Error" , 1, 6))
         }
 
     @Test
-    fun `test getWeather when invalid location is requested, then error is returned`() =
+    fun `test getWeather when invalid search is requested, then error is returned`() =
         runBlocking {
-            assertEquals(errorResponse, repository.getHeadlines("varun" , 1, 6))
+            assertEquals(errorResponse, repository.getHeadlines("Success" , 1, 6))
         }
 }

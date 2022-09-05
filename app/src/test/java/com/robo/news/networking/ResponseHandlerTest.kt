@@ -1,4 +1,4 @@
-package com.github.harmittaa.koinexample.networking
+package com.robo.news.networking
 
 import com.nhaarman.mockitokotlin2.mock
 import com.robo.news.source.network.ResponseHandler

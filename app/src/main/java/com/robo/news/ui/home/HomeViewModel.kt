@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.robo.news.source.network.Resource
+import com.robo.news.source.network.Status
 import com.robo.news.source.news.NewsApiRepositoryInterface
 
 import com.robo.news.source.news.NewsModel
@@ -23,14 +25,16 @@ class HomeViewModel(
     val title = ""
     var isActivated = true
     val message by lazy { MutableLiveData<String>() }
+    val status by lazy { MutableLiveData<Status>() }
     val loading by lazy { MutableLiveData<Boolean>() }
     val loadMore by lazy { MutableLiveData<Boolean>() }
-    val news by lazy { MutableLiveData<NewsModel>() }
+    val news by lazy { MutableLiveData<Resource<NewsModel>>() }
     private val mErrorMessage = MutableLiveData<String?>()
 
     init {
       //  category.value = ""
         message.value = null
+        status.value = Status.START
     }
 
     var query = ""
@@ -43,15 +47,18 @@ class HomeViewModel(
         if (page > 1) loadMore.value = true else loading.value = true
         viewModelScope.launch {
             try {
+                status.value = Status.LOADING
                 val response = repository.getHeadlines( query, page,pageSize)
                 news.value = response
-                val totalResult : Double = (response!!.totalResults / pageSize).toDouble()
+                status.value = Status.SUCCESS
+                val totalResult : Double = (response?.data!!.totalResults / pageSize).toDouble()
                 maxpage = ceil(totalResult).toInt()
                 page++
                 loading.value = false
                 loadMore.value = false
             } catch (e: Exception) {
                 message.value = e.message
+                status.value = Status.ERROR
             }
         }
     }
