@@ -1,5 +1,7 @@
 package com.robo.news
 
+import androidx.arch.core.executor.ArchTaskExecutor
+import androidx.arch.core.executor.TaskExecutor
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.nhaarman.mockitokotlin2.mock
@@ -11,15 +13,18 @@ import com.robo.news.source.news.NewsRepository
 import com.robo.news.ui.home.HomeViewModel
 
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.engine.config.ConfigManager.init
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import org.junit.jupiter.api.extension.AfterEachCallback
+import org.junit.jupiter.api.extension.BeforeEachCallback
+import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ExtensionContext
 
-
-
-
- class MyKoTestClass : DescribeSpec({
+@ExtendWith(InstantExecutorExtension::class)
+class MyKoTestClass : DescribeSpec({
     lateinit var testViewModel: HomeViewModel
 
      var articles = NewsModel()
@@ -32,14 +37,16 @@ import kotlinx.coroutines.test.setMain
 
 //     @Rule
 //     @JvmField
-     val instantExecutorRule = InstantTaskExecutorRule()
+  //   val instantExecutorRule = InstantTaskExecutorRule()
 
     // @ExperimentalCoroutinesApi
-     val mainThreadSurrogate = newSingleThreadContext("UI thread")
+ //    val mainThreadSurrogate = newSingleThreadContext("UI thread")
 
-
+    init{
+        listener(InstantExecutorListener())
+    }
      beforeSpec {
-        Dispatchers.setMain(mainThreadSurrogate)
+   //     Dispatchers.setMain(mainThreadSurrogate)
          newsRepository = mock()
 
          runBlocking {
@@ -75,8 +82,31 @@ import kotlinx.coroutines.test.setMain
     }
 
 
-})
 
+
+
+
+     })
+
+
+// setup exucuter
+
+class InstantExecutorExtension : BeforeEachCallback, AfterEachCallback {
+
+    override fun beforeEach(context: ExtensionContext?) {
+        ArchTaskExecutor.getInstance()
+            .setDelegate(object : TaskExecutor() {
+                override fun executeOnDiskIO(runnable: Runnable) = runnable.run()
+
+                override fun postToMainThread(runnable: Runnable) = runnable.run()
+
+                override fun isMainThread(): Boolean = true
+            })
+    }
+
+    override fun afterEach(context: ExtensionContext?) {
+        ArchTaskExecutor.getInstance().setDelegate(null)
+    }
 
 
 
