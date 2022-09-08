@@ -34,7 +34,7 @@ class HomeViewModel(
     init {
       //  category.value = ""
         message.value = null
-        status.value = Status.START
+        status.value = Status.LOADING
     }
 
     var query = ""
