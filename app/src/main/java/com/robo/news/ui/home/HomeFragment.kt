@@ -23,6 +23,10 @@ import timber.log.Timber
 val homeModule = module {
     factory { HomeFragment() }
 }
+sealed class Lodaing {
+    data class  Hide(val hide: Boolean = false)
+    var SHOW:Boolean =false
+}
 
 class HomeFragment : Fragment() {
 
@@ -43,11 +47,19 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.lifecycleOwner = viewLifecycleOwner
-        binding.viewModel = viewModel
 
-        bindingToolbar.title = viewModel.title
-        bindingToolbar.container.inflateMenu(R.menu.menu_search)
+        binding =  binding.let {
+            it.lifecycleOwner = viewLifecycleOwner
+            it.viewModel = viewModel
+            it
+        }
+
+
+        bindingToolbar.apply{
+            title =  viewModel.title
+            container.inflateMenu(R.menu.menu_search)
+        }
+
         val menu = binding.toolbar.container.menu
         val search = menu.findItem(R.id.action_search)
         val searchView = search.actionView as SearchView
@@ -87,9 +99,12 @@ class HomeFragment : Fragment() {
 
     private fun firstLoad() {
         binding.scroll.scrollTo(0, 0)
-        viewModel.page = 1
-        viewModel.maxpage = 4
-        viewModel.fetch()
+
+        viewModel.apply {
+            page=1
+            maxpage =20
+        }.fetch()
+
     }
 
     private val newsAdapter by lazy {

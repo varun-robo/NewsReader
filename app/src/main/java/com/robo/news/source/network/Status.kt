@@ -1,8 +1,7 @@
 package com.robo.news.source.network
 
-enum class Status {
-    SUCCESS,
-    ERROR,
-    LOADING,
-    START
+sealed class Status(val status:Int) {
+    object SUCCESS : Status(1)
+    object ERROR   : Status(2)
+    object LOADING  : Status(3)
 }

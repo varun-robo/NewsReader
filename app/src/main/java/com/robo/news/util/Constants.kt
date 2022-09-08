@@ -1,8 +1,7 @@
 package com.robo.news.util
 
-// room db constants
-const val HEADLINES_DB_NAME = "headlinesDb"
-// network constants
-const val API_KEY_PARAM = "apiKey"
-// error constants
+
 const val GENERAL_ERROR = "Something went wrong, try again."
+
+// KEY
+const val KEY_DETAILS = "intent_detail";

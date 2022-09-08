@@ -39,8 +39,10 @@ class BookmarkFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         bindingToolbar.title = viewModel.title
-        binding.lifecycleOwner = viewLifecycleOwner
-        binding.viewModel = viewModel
+        binding.let {
+            it.lifecycleOwner = viewLifecycleOwner
+            it.viewModel = viewModel
+        }
 
         NewsAdapter.VIEW_TYPE = 2
         binding.listBookmark.adapter = newsAdapter
@@ -55,7 +57,7 @@ class BookmarkFragment : Fragment() {
             override fun onClick(articleModel: ArticleModel) {
                 startActivity(
                     Intent(requireActivity(), DetailActivity::class.java)
-                        .putExtra("intent_detail", articleModel)
+                        .putExtra( com.robo.news.util.KEY_DETAILS + "intent_detail", articleModel)
                 )
             }
         })
