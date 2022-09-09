@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import com.robo.news.R
 import com.robo.news.databinding.CustomToolbarBinding
 import com.robo.news.databinding.FragmentHomeBinding
+import com.robo.news.source.network.NetworkResponse
 import com.robo.news.source.news.ArticleModel
 
 import com.robo.news.ui.detail.DetailActivity
@@ -79,9 +80,18 @@ class HomeFragment : Fragment() {
         firstLoad()
         binding.listNews.adapter = newsAdapter
         viewModel.news.observe(viewLifecycleOwner, {
-            Timber.e(it.data?.articles.toString())
-            if (viewModel.page == 1) newsAdapter.clear()
-            it.data?.let { it1 -> newsAdapter.add(it1.articles) }
+            Timber.e(it.data?.news?.articles.toString())
+            if (viewModel.page == 1)
+                newsAdapter.clear()
+
+            when(it) {
+
+                is NetworkResponse.Success ->  it.data?.let { it1 -> it1.news?.let { it2 -> newsAdapter.add(it2.articles) } }
+
+                is NetworkResponse.Loading -> {     }
+
+                is NetworkResponse.Failure -> {     }
+            }
         })
 
         viewModel.message.observe(viewLifecycleOwner, {

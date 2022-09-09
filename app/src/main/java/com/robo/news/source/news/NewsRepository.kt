@@ -27,7 +27,8 @@ class NewsRepository(
         pageSize: Int,
     ): Resource<NewsModel> {
         return try {
-            responseHandler.handleSuccess( api.fetchNews(
+           // ResponseHandler.Loading()
+            ResponseHandler().handleSuccess( api.fetchNews(
                 BuildConfig.API_KEY,
                 "in",
                 query,
