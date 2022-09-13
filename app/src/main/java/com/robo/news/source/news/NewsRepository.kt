@@ -6,6 +6,7 @@ import com.robo.news.source.network.ApiClient
 import com.robo.news.source.network.Resource
 import com.robo.news.source.network.ResponseHandler
 import org.koin.dsl.module
+import java.io.IOException
 
 val repositoryModule = module {
     factory { NewsRepository( get() , get()) }
@@ -26,7 +27,9 @@ class NewsRepository(
         page: Int,
         pageSize: Int,
     ): Resource<NewsModel> {
-        return try {
+        var res : Resource<NewsModel> = responseHandler.handleException(IOException())
+
+         runCatching{
            // ResponseHandler.Loading()
             ResponseHandler().handleSuccess( api.fetchNews(
                 BuildConfig.API_KEY,
@@ -35,9 +38,14 @@ class NewsRepository(
                 page,
                 pageSize
             ))
-        }catch (e: Exception){
-            return responseHandler.handleException(e)
+        }.onSuccess{
+             res = it
         }
+             //.recover { "" }
+             .onFailure {
+                 res = responseHandler.handleException(IOException())
+        }
+        return res
     }
 
     suspend fun find(articleModel: ArticleModel)= db?.find(articleModel.publishedAt )

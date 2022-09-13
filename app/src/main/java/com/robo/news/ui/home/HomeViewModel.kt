@@ -14,6 +14,7 @@ import com.robo.news.source.news.NewsRepository
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import java.io.IOException
 import kotlin.math.ceil
 
 val homeViewModel = module {
@@ -48,7 +49,7 @@ class HomeViewModel(
 
         if (page > 1) loadMore.value = true else loading.value = true
         viewModelScope.launch {
-            try {
+            kotlin.runCatching {
                 news.value = NetworkResponse.Loading()
         //        status.value = Status.LOADING
                 val response =  repository.getHeadlines( query, page,pageSize)
@@ -56,12 +57,14 @@ class HomeViewModel(
          //       status.value = Status.SUCCESS
                 val totalResult : Double = (response?.news!!.totalResults / pageSize).toDouble()
                 maxpage = ceil(totalResult).toInt()
-                page++
+
+            } .onSuccess { page++
                 loading.value = false
-                loadMore.value = false
-            } catch (e: Exception) {
-                message.value = e.message
-                news.value = message?.let { it.value?.let { it1 -> NetworkResponse.Failure(it1,e) } }
+                loadMore.value = false }
+
+                .onFailure{
+                message.value = it.message
+                news.value = message?.let { it.value?.let { it1 -> NetworkResponse.Failure(it1,IOException()) } }
          //       status.value = Status.ERROR
             }
         }
