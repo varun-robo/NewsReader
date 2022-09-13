@@ -88,9 +88,11 @@ class HomeFragment : Fragment() {
 
                 is NetworkResponse.Success ->  it.data?.let { it1 -> it1.news?.let { it2 -> newsAdapter.add(it2.articles) } }
 
-                is NetworkResponse.Loading -> {     }
+                is NetworkResponse.Loading -> {  Toast.makeText(requireContext(), "Loading...", Toast.LENGTH_SHORT).show()
+                }
 
-                is NetworkResponse.Failure -> {     }
+                is NetworkResponse.Failure -> {   Toast.makeText(requireContext(), getString(R.string.error_msg), Toast.LENGTH_SHORT).show()
+                }
             }
         })
 
